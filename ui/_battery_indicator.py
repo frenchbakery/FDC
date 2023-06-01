@@ -7,7 +7,7 @@ Display of one singular battery
 Author:
 Nilusink
 """
-from pginter.types import DoubleVar, Color, StringVar
+from pginter.types import DoubleVar, Color, StringVar, FrameBind
 from pginter import widgets
 from random import randint
 from PIL import Image
@@ -35,16 +35,27 @@ class BatteryIndicator(widgets.Frame):
     critical: float = 20
 
     def __init__(self, *args, **kwargs) -> None:
+        # random values since there are currently no real battery
+        # monitors
         self.percentage = DoubleVar(value=randint(0, 1000) / 10)
         self.charging = not not randint(0, 1)
 
+        # initialize parent
         super().__init__(*args, **kwargs)
 
+        # style config
+        self.hover_style.backgroundColor = Color.from_hex("#777")
+        self.active_style.backgroundColor = Color.from_hex("#888")
+
+        # bind mouse click event
+        self.bind(FrameBind.active, lambda *_: print("hehe"))
+
+        # configure grid
         self.grid_columnconfigure(0, weight=1)
-        self.grid_rowconfigure(0, weight=1)
-        self.grid_rowconfigure(1, weight=1)
+        self.grid_rowconfigure((0, 1), weight=1)
         self.grid_rowconfigure(2, weight=2)
 
+        # layout
         widgets.Label(self, text="ID#0").grid(row=0, column=0, sticky="nsew")
 
         self._bat_icon = widgets.Frame(
@@ -71,7 +82,7 @@ class BatteryIndicator(widgets.Frame):
         """
         get the correct image with charging symbol drawn
         """
-        if (self.percentage.get() <= self.critical):
+        if self.percentage.get() <= self.critical:
             img = FRAME_RED.copy()
 
         else:
